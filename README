@@ -1,0 +1,7 @@
+This is a template project for C/C++
+Features:
+- Source code (.c|.cpp) files are in src/ directory. Must have one 
+  file named main.(c|cpp)
+- Header files (.h|.hpp) are in include/ directory
+- make run builds and starts the program
+
