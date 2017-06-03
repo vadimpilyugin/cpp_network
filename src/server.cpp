@@ -20,7 +20,7 @@ int main() {
 		// Ждем сообщений от клиентов
 		std::string msg = socket.recv();
 		// Получили сообщение, делаем работу
-		sleep(2);
+		sleep(1);
 		// Посылаем ответ
 		socket.send ("Привет от openplatform.me!");
 	}
