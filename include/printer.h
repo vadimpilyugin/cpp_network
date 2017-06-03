@@ -1,3 +1,5 @@
+#define DEBUG 1
+#pragma once
 #include <string>
 #include <iostream>
 #include <exception>
@@ -87,9 +89,11 @@ namespace Printer {
   */
 
   static void debug(const std::string msg = detail::empty_msg, const std::string who = detail::debug_msg, const bool in_place = false) {
+    #if DEBUG
     detail::generic(msg, who, green, in_place);
+    #endif
   }
-  static void assert(const bool expr, std::string msg = detail::empty_msg, const std::string who = detail::assert_msg) {
+  static void passert(const bool expr, std::string msg = detail::empty_msg, const std::string who = detail::assert_msg) {
     if(!expr) {
       detail::generic(msg, who, red);
       throw AssertException(msg);
