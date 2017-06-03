@@ -13,7 +13,7 @@ using namespace Network;
 int main() {
 	Printer::debug ("Программа для связи двух точек");
 	// Сервер стартует на порту 5555
-	TCPEndpoint endpoint ("127.0.0.1", "5555");
+	TCPEndpoint endpoint ("*", "5555");
 	Socket socket = Socket::bind (endpoint.str());
 	// Ждем сообщений от клиентов
 	std::string msg = socket.recv();

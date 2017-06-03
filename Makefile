@@ -1,14 +1,14 @@
 # Target: MAIN_TARGET(.c|.cpp) -> MAIN_TARGET
 MAIN_TARGET_1 = client
 MAIN_TARGET_2 = server
-MAIN_TARGET_3 = hwclient
-MAIN_TARGET_4 = hwserver
+#MAIN_TARGET_3 = hwclient
+#MAIN_TARGET_4 = hwserver
 
 # File extension
 FILE_EXT=.cpp
 
 # Libraries: lib(.*).a -> -l(.*)
-LIB_FILES = -lzmq
+LIB_FILES = -lzmq -lpthread
 
 # Compiler options
 CXX = g++
@@ -73,11 +73,11 @@ $(BIN_DIR)/$(MAIN_TARGET_1): $(OBJ_DIR)/network.o $(OBJ_DIR)/$(MAIN_TARGET_1).o
 	$(CXX) $(CXXFLAGS) $(filter %.o, $^) -o $@ $(LDFLAGS)
 $(BIN_DIR)/$(MAIN_TARGET_2): $(OBJ_DIR)/network.o $(OBJ_DIR)/$(MAIN_TARGET_2).o
 	$(CXX) $(CXXFLAGS) $(filter %.o, $^) -o $@ $(LDFLAGS)
-
-$(BIN_DIR)/$(MAIN_TARGET_3): $(OBJ_DIR)/network.o $(OBJ_DIR)/$(MAIN_TARGET_3).o
-	$(CXX) $(CXXFLAGS) $(filter %.o, $^) -o $@ $(LDFLAGS)
-$(BIN_DIR)/$(MAIN_TARGET_4): $(OBJ_DIR)/network.o $(OBJ_DIR)/$(MAIN_TARGET_4).o
-	$(CXX) $(CXXFLAGS) $(filter %.o, $^) -o $@ $(LDFLAGS)
+#
+#$(BIN_DIR)/$(MAIN_TARGET_3): $(OBJ_DIR)/network.o $(OBJ_DIR)/$(MAIN_TARGET_3).o
+#	$(CXX) $(CXXFLAGS) $(filter %.o, $^) -o $@ $(LDFLAGS)
+#$(BIN_DIR)/$(MAIN_TARGET_4): $(OBJ_DIR)/network.o $(OBJ_DIR)/$(MAIN_TARGET_4).o
+#	$(CXX) $(CXXFLAGS) $(filter %.o, $^) -o $@ $(LDFLAGS)
 
 # Pattern for generating dependency description files (*.d)
 $(DEP_DIR)/%.d: $(SRC_DIR)/%$(FILE_EXT)
