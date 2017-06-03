@@ -15,14 +15,14 @@ int main() {
 	// Сервер стартует на порту 5555
 	TCPEndpoint endpoint ("*", "5555");
 	Socket socket = Socket::bind (endpoint.str());
-	// Ждем сообщений от клиентов
-	std::string msg = socket.recv();
-	// Получили сообщение, делаем работу
-	sleep(2);
-	// Посылаем ответ
-	socket.send ("I'm okay, sir");
-	msg = socket.recv();
-	sleep(2);
-	socket.send ("Yeah, sure");
+	// Главный цикл
+	while (1) {
+		// Ждем сообщений от клиентов
+		std::string msg = socket.recv();
+		// Получили сообщение, делаем работу
+		sleep(2);
+		// Посылаем ответ
+		socket.send ("Привет от openplatform.me!");
+	}
 	return 0;
 }

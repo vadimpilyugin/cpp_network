@@ -1,4 +1,4 @@
-#define DEBUG 0
+#define DEBUG 1
 #pragma once
 #include <string>
 #include <iostream>
