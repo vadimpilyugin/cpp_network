@@ -1,5 +1,8 @@
-# Target: main(.c|.cpp) -> MAIN_TARGET
-MAIN_TARGET = solve
+# Target: MAIN_TARGET(.c|.cpp) -> MAIN_TARGET
+MAIN_TARGET_1 = client
+MAIN_TARGET_2 = server
+MAIN_TARGET_3 = hwclient
+MAIN_TARGET_4 = hwserver
 
 # File extension
 FILE_EXT=.cpp
@@ -45,8 +48,12 @@ OBJFILES := $(call src_to_obj, $(CXXFILES))
 .DEFAULT_GOAL := all
 
 # Alias to make all targets.
-.PHONY: all
-all: $(BIN_DIR)/$(MAIN_TARGET)
+.PHONY: all 
+all: clear $(BIN_DIR)/$(MAIN_TARGET_1) $(BIN_DIR)/$(MAIN_TARGET_2) $(BIN_DIR)/$(MAIN_TARGET_3) $(BIN_DIR)/$(MAIN_TARGET_4)
+
+.PHONY: clear
+clear:
+	clear; clear; clear;
 
 # Suppress makefile rebuilding.
 Makefile: ;
@@ -62,7 +69,14 @@ deps.mk:
 	echo '-include $(call src_to_dep, $(CXXFILES))' >deps.mk
 
 # Rules for compiling targets
-$(BIN_DIR)/$(MAIN_TARGET): $(OBJFILES)
+$(BIN_DIR)/$(MAIN_TARGET_1): $(OBJ_DIR)/network.o $(OBJ_DIR)/$(MAIN_TARGET_1).o
+	$(CXX) $(CXXFLAGS) $(filter %.o, $^) -o $@ $(LDFLAGS)
+$(BIN_DIR)/$(MAIN_TARGET_2): $(OBJ_DIR)/network.o $(OBJ_DIR)/$(MAIN_TARGET_2).o
+	$(CXX) $(CXXFLAGS) $(filter %.o, $^) -o $@ $(LDFLAGS)
+
+$(BIN_DIR)/$(MAIN_TARGET_3): $(OBJ_DIR)/network.o $(OBJ_DIR)/$(MAIN_TARGET_3).o
+	$(CXX) $(CXXFLAGS) $(filter %.o, $^) -o $@ $(LDFLAGS)
+$(BIN_DIR)/$(MAIN_TARGET_4): $(OBJ_DIR)/network.o $(OBJ_DIR)/$(MAIN_TARGET_4).o
 	$(CXX) $(CXXFLAGS) $(filter %.o, $^) -o $@ $(LDFLAGS)
 
 # Pattern for generating dependency description files (*.d)
@@ -83,12 +97,12 @@ clean:
 # Additional targers for testing purposes
 
 .PHONY: debug
-debug: $(BIN_DIR)/$(MAIN_TARGET)
-	gdb $(BIN_DIR)/$(MAIN_TARGET)
+debug: clear $(BIN_DIR)/$(prog)
+	gdb $(BIN_DIR)/$(prog)
 	
 .PHONY: run
-run: $(BIN_DIR)/$(MAIN_TARGET)
-	$(BIN_DIR)/$(MAIN_TARGET)	
+run: clear $(BIN_DIR)/$(prog)
+	$(BIN_DIR)/$(prog)	
 
 #.PHONY: test
 #test: $(BIN_DIR)/$(MAIN_TARGET)
