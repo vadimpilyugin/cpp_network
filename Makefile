@@ -102,7 +102,10 @@ debug: clear $(BIN_DIR)/$(prog)
 	
 .PHONY: run
 run: clear $(BIN_DIR)/$(prog)
-	$(BIN_DIR)/$(prog)	
+	$(BIN_DIR)/$(prog)
+.PHONY: lib
+lib: clear $(OBJFILES)
+	ar -cvq libnetwork.a $(OBJFILES)
 
 #.PHONY: test
 #test: $(BIN_DIR)/$(MAIN_TARGET)

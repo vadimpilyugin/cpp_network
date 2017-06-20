@@ -16,12 +16,16 @@ namespace Network {
 			return msg.c_str();
 		}
 	};
+	// Два send подряд или два receive подряд
+	// Порядок должен быть строго по очереди
 	class WrongOrderException: public Exception {
 		using Network::Exception::Exception;
 	};
+	// Невозможно послать сообщение в данный момент. Может буфер переполнен, может сеть отвалилась
 	class CannotSendException: public Exception {
 		using Network::Exception::Exception;
 	};
+	// Нет готовых сообщений, чтобы принять. Нужен в случае неблокирующего приема
 	class NoMessagesException: public Exception {
 		using Network::Exception::Exception;
 	};
@@ -86,13 +90,21 @@ namespace Network {
 			WrongOrderException, 
 			NoMessagesException
 		);
+		Socket (Socket &&other) {
+			is_bound = other.is_bound;
+			context_p = other.context_p;
+			socket_p = other.socket_p;
+			other.context_p = nullptr;
+			other.socket_p = nullptr;
+			Printer::debug ("Сокет был передан в другие руки");
+		}
 	private:
-		zmq::context_t *context_p;
-		zmq::socket_t *socket_p;
-		bool is_bound; // сокет привязан к точке(true) или подключается к ней(false)
-		Socket (zmq::context_t *context_, zmq::socket_t *socket_, const bool is_bound_): 
+		Socket (zmq::context_t *context_ = nullptr, zmq::socket_t *socket_ = nullptr, const bool is_bound_ = false): 
 			context_p(context_),
 			socket_p(socket_),
 			is_bound(is_bound_) {}
+		zmq::context_t *context_p;
+		zmq::socket_t *socket_p;
+		bool is_bound; // сокет привязан к точке(true) или подключается к ней(false)
 	};
 }
