@@ -12,7 +12,7 @@
 int main() {
 	Printer::debug ("Программа для связи двух точек");
 	// Клиент подключается к серверу на порту 5555
-	Network::Socket socket = Network::Socket::connect (Network::TCPEndpoint ("194.87.96.23", "5555").str());
+	Network::Socket socket = Network::Socket::connect (Network::TCPEndpoint ("194.87.96.23", "8888").str());
 	for (int i = 0; i < 5; i++) {
 		// посылает сообщение
 		socket.send (std::string("Привет серверу от клиента номер ") + std::to_string (i));
