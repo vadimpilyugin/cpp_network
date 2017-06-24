@@ -19,6 +19,8 @@ int main() {
 	TCPEndpoint endpoint2 ("*", "5556");
 	Socket socket = Socket::bind (endpoint.str(), context);
 	Socket socket2 = Socket::bind (endpoint2.str(), context);
+	Printer::error (socket.addr (), "EP1");
+	Printer::error (socket2.addr (), "EP2");
 	// Главный цикл
 	while (1) {
 		// Ждем сообщений от клиентов

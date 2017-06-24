@@ -113,8 +113,10 @@ throw 	(Exception::Exception)
 
 void Socket::close () {
 	// очистить выделенные ресурсы
-	if(socket_p != nullptr)
+	if(socket_p != nullptr) {
 		delete socket_p;
+		socket_p = nullptr;
+	}
 	else
 		Printer::note("Сокет уже закрыт!", "Socket");
 	
