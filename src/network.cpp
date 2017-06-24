@@ -3,14 +3,43 @@
 
 using namespace Network;
 
-Socket Socket::bind (const std::string &endpoint) 
-throw (Exception)
+zmq::context_t *Context::context_p = nullptr;
+
+zmq::context_t *Context::createContext () throw (Exception::Exception) {
+	if (context_p != nullptr)
+		return context_p;
+	else {
+		try {
+			// создаем контекст
+			context_p = new zmq::context_t (1);
+			return context_p;
+		}
+		catch (zmq::error_t &error) {
+			Printer::error ("Не удалось создать контекст");
+			throw Exception::Exception (error.what ());
+		}
+	}
+	
+}
+
+void Context::destroyContext () {
+	if (context_p != nullptr) {
+		delete context_p;
+		context_p = nullptr;
+	}
+	else 
+		Printer::error ("Попытка уничтожить несуществующий контекст!");
+}
+
+zmq::context_t *Context::getContext () {
+	return context_p;
+}
+
+Socket Socket::bind (const std::string &endpoint, zmq::context_t *context_p) 
+throw (Exception::Exception)
 {
-	zmq::context_t *context_p = nullptr;
 	zmq::socket_t *socket_p = nullptr;
 	try {
-		// создаем контекст
-		context_p = new zmq::context_t (1);
 		// нужно привязаться к данной точке
 		// создаем сокет REP
 		socket_p = new zmq::socket_t(*context_p, ZMQ_REP);
@@ -23,25 +52,20 @@ throw (Exception)
 		// очистить уже выделенные ресурсы
 		if(socket_p != nullptr)
 			delete socket_p;
-		if(context_p != nullptr)
-			delete context_p;
 		// выкинуть исключение
 		Printer::debug("Hello, world");
-		throw Exception (error.what());
+		throw Exception::Exception (error.what());
 	}
 	Printer::debug ("Сокет был создан и привязан");
 	Printer::debug (endpoint, "Endpoint");
-	return Socket (context_p, socket_p, true);
+	return Socket (socket_p, true);
 }
 
-Socket Socket::bind (const Endpoint &endpoint) 
-throw (Exception)
+Socket Socket::bind (const Endpoint &endpoint, zmq::context_t *context_p) 
+throw (Exception::Exception)
 {
-	zmq::context_t *context_p = nullptr;
 	zmq::socket_t *socket_p = nullptr;
 	try {
-		// создаем контекст
-		context_p = new zmq::context_t (1);
 		// нужно привязаться к данной точке
 		// создаем сокет REP
 		socket_p = new zmq::socket_t(*context_p, ZMQ_REP);
@@ -54,25 +78,20 @@ throw (Exception)
 		// очистить уже выделенные ресурсы
 		if(socket_p != nullptr)
 			delete socket_p;
-		if(context_p != nullptr)
-			delete context_p;
 		// выкинуть исключение
 		Printer::debug("Hello, world");
-		throw Exception (error.what());
+		throw Exception::Exception (error.what());
 	}
 	Printer::debug ("Сокет был создан и привязан");
 	Printer::debug (endpoint.str(), "Endpoint");
-	return Socket (context_p, socket_p, true);
+	return Socket (socket_p, true);
 }
 
-Socket Socket::connect (const std::string &endpoint)
-throw 	(Exception)
+Socket Socket::connect (const std::string &endpoint, zmq::context_t *context_p)
+throw 	(Exception::Exception)
 {
-	zmq::context_t *context_p = nullptr;
 	zmq::socket_t *socket_p = nullptr;
 	try {
-		// создаем контекст
-		context_p = new zmq::context_t (1);
 		// в этом случае нужно подключиться к указанной точке
 		// создаем сокет REQ
 		socket_p = new zmq::socket_t (*context_p, ZMQ_REQ);
@@ -84,35 +103,34 @@ throw 	(Exception)
 		// очистить уже выделенные ресурсы
 		if(socket_p != nullptr)
 			delete socket_p;
-		if(context_p != nullptr)
-			delete context_p;
 		// выкинуть исключение
-		throw Exception (error.what());
+		throw Exception::Exception (error.what());
 	}
 	Printer::debug ("Сокет был создан и подключен");
 	Printer::debug (endpoint, "Endpoint");
-	return Socket (context_p, socket_p, false);
+	return Socket (socket_p, false);
 }
 
-Socket::~Socket() {
+void Socket::close () {
 	// очистить выделенные ресурсы
-	Printer::debug("Сокет был уничтожен");
 	if(socket_p != nullptr)
 		delete socket_p;
 	else
 		Printer::note("Сокет уже закрыт!", "Socket");
-	if(context_p != nullptr)
-		delete context_p;
-	else
-		Printer::note("Контекст уже очищен!", "Socket");
+	
+}
+
+Socket::~Socket() {
+	close ();
+	Printer::debug("Сокет был уничтожен");
 }
 
 std::string Socket::addr() const
-throw 	(Exception)
+throw 	(Exception::Exception)
 {
 	if(!is_bound) {
 		Printer::error("Сокет не был привязан ни к одной точке", "Socket.addr");
-		throw Exception ("Сокет не имеет привязанного адреса");
+		throw Exception::Exception ("Сокет не имеет привязанного адреса");
 	}
 	// заводим буфер
 	size_t buflen = 1000;
@@ -124,7 +142,7 @@ throw 	(Exception)
 	catch (zmq::error_t &error) {
 		delete [] buffer;
 		Printer::error (error.what(), "Socket.getsockopt");
-		throw Exception (error.what());
+		throw Exception::Exception (error.what());
 	}
 	// записываем в std::string
 	std::string result(buffer);
@@ -135,7 +153,7 @@ throw 	(Exception)
 
 void Socket::send(const std::string msg) 
 throw (
-	Exception,
+	Exception::Exception,
 	WrongOrderException,
 	CannotSendException,
 	Printer::AssertException
@@ -163,13 +181,13 @@ throw (
 			throw WrongOrderException (error.what());
 		}
 		Printer::error(error.what(), "Произошла ошибка при отправке");
-		throw Exception (error.what());
+		throw Exception::Exception (error.what());
 	}
 }
 
 std::string Socket::recv(bool nonblock) 
 throw (
-	Exception,
+	Exception::Exception,
 	WrongOrderException, 
 	NoMessagesException
 )
@@ -207,6 +225,6 @@ throw (
 			throw WrongOrderException (error.what());
 		}
 		Printer::error(error.what(), "Произошла ошибка при приеме");
-		throw Exception (error.what());
+		throw Exception::Exception (error.what());
 	}
 }

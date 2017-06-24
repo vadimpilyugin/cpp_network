@@ -1,33 +1,25 @@
 #pragma once
 #include "zmq.hpp"
 #include "printer.h"
-#include <exception>
+#include "my_exception.h"
 #include <string>
 
 namespace Network {
 	/*
 	* Здесь находятся все, что относится к работе с сетью
 	*/
-	class Exception: public std::exception {
-		std::string msg;
-	public:
-		Exception(const std::string _msg): msg(_msg) {}
-		virtual const char *what() const noexcept {
-			return msg.c_str();
-		}
-	};
 	// Два send подряд или два receive подряд
 	// Порядок должен быть строго по очереди
-	class WrongOrderException: public Exception {
-		using Network::Exception::Exception;
+	class WrongOrderException: Exception::Exception {
+		using Exception::Exception;
 	};
 	// Невозможно послать сообщение в данный момент. Может буфер переполнен, может сеть отвалилась
-	class CannotSendException: public Exception {
-		using Network::Exception::Exception;
+	class CannotSendException: Exception::Exception {
+		using Exception::Exception;
 	};
 	// Нет готовых сообщений, чтобы принять. Нужен в случае неблокирующего приема
-	class NoMessagesException: public Exception {
-		using Network::Exception::Exception;
+	class NoMessagesException: Exception::Exception {
+		using Exception::Exception;
 	};
 	/*
 	* Конечная точка это уникальный адрес
@@ -55,6 +47,16 @@ namespace Network {
 			return std::string("tcp://") + ip_addr + std::string(":") + port_number;
 		}
 	};
+	// Класс, хранящий контекст для всех сокетов
+	class Context {
+	public:
+		static zmq::context_t *createContext () throw (Exception::Exception);
+		static void destroyContext ();
+		static zmq::context_t *getContext ();
+	private:
+		static zmq::context_t *context_p;
+	};
+
 	/*
 	* Единственное средство связи между игроками. Представляет собой
 	* одновременно и точку приема, и точку передачи. Прием и передача
@@ -63,47 +65,45 @@ namespace Network {
 	class Socket {
 	public:
 		// Возвращает сокет, привязанный к точке
-		static Socket bind (const std::string &endpoint) 
-		throw 	(Exception);
-		Socket bind (const Endpoint &endpoint) 
-		throw (Exception);
+		static Socket bind (const std::string &endpoint, zmq::context_t *context) 
+		throw 	(Exception::Exception);
+		Socket bind (const Endpoint &endpoint, zmq::context_t *context) 
+		throw (Exception::Exception);
 		// Возвращает сокет, подключенный к удаленной точке
-		static Socket connect (const std::string &endpoint)
-		throw 	(Exception);
+		static Socket connect (const std::string &endpoint, zmq::context_t *context)
+		throw 	(Exception::Exception);
 		// Деструктор
 		~Socket();
 		// вернет адрес, к которому привязан сокет
 		std::string addr() const 
-		throw 	(Exception);
+		throw 	(Exception::Exception);
 		// посылает строку на другой сокет
 		void send(const std::string msg) 
 		throw (
-			Exception,
+			Exception::Exception,
 			WrongOrderException,
 			CannotSendException,
 			Printer::AssertException
 		);
 		// принимает строку от другого сокета
-		std::string recv(bool nonblock = false) 
+		std::string recv(bool nonblock = true) 
 		throw (
-			Exception,
+			Exception::Exception,
 			WrongOrderException, 
 			NoMessagesException
 		);
+		// Закрывает сокет, аналогично деструктору
+		void close ();
 		Socket (Socket &&other) {
 			is_bound = other.is_bound;
-			context_p = other.context_p;
 			socket_p = other.socket_p;
-			other.context_p = nullptr;
 			other.socket_p = nullptr;
 			Printer::debug ("Сокет был передан в другие руки");
 		}
 	private:
-		Socket (zmq::context_t *context_ = nullptr, zmq::socket_t *socket_ = nullptr, const bool is_bound_ = false): 
-			context_p(context_),
+		Socket (zmq::socket_t *socket_ = nullptr, const bool is_bound_ = false): 
 			socket_p(socket_),
 			is_bound(is_bound_) {}
-		zmq::context_t *context_p;
 		zmq::socket_t *socket_p;
 		bool is_bound; // сокет привязан к точке(true) или подключается к ней(false)
 	};
